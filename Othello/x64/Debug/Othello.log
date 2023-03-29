@@ -1,0 +1,3 @@
+﻿  Game.cpp
+C:\Users\ricob\Desktop\Othello\Othello\Player.h(9,28): warning C4102: 'Name': unreferenced label
+  Othello.vcxproj -> C:\Users\ricob\Desktop\Othello\x64\Debug\Othello.exe
