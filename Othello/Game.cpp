@@ -5,9 +5,6 @@
 //using namespace std;
 string Game::LoadedFile;
 
-Player Game::first;
-Player Game::second;
-Player Game::current;
 
 Game::Game(Player p1, Player p2)
 {
@@ -19,25 +16,26 @@ void Game::start()
 {
 	bool Same = true;//we don't want both players to have teh same name, as this could not only cause confusion to the players, but in Game::load() too. 
 	system("cls");
-	Player Player1;
-	Player Player2;
+	
+	string P1;
+	string P2;
+
 
 	while (Same == true) {
 		 // initializing the two
 		cout << "Please enter a name for P1." << endl;
-		string P1;
+		
 		cin >> P1;
 		
-		first = Player1;
-		Player1.setSymbol('W');
+		
+		
 
 		system("cls");
 		cout << "Please enter a name for P2." << endl;
-		string P2;
+		
 		cin >> P2;
 		
-		second = Player2;
-		Player2.setSymbol('B');
+		
 
 		Same = false;
 		if (P1 == P2) {
@@ -47,6 +45,11 @@ void Game::start()
 		}
 	}
 
+	first= Player(P1);
+	second= Player(P2);
+	first.setSymbol('B');
+	second.setSymbol('W');
+	
 	system("cls");
 	
 	cout << "Please choose starting positions 1 or 2." << endl << "\n1" << endl;
@@ -113,6 +116,10 @@ void Game::start()
 		}
 		}
 
+		
+
+		
+
 	}
 
 	
@@ -134,7 +141,9 @@ void Game::start()
 	
 	board = Board(positions);
 	current = first;
-		
+	
+
+	
 	
 }
 		
@@ -143,8 +152,113 @@ void Game::start()
 
 void Game::play()
 {
-	system("cls");
-	board.takeTurn(current);
+	bool gameEnd = false;
+	
+	while (!(gameEnd)) {
+		system("cls");
+		if (board.CanFlip(current.getSymbol())) {
+
+			board.drawBoard();
+			
+			int choice;
+			bool goodchoice=false;
+			while (!goodchoice) {//where you choose what to do
+				cout<<"\n" << current.getName() << " enter 1 to save, 2 to concede, or 3 to make a move." << endl;
+				cin >> choice;
+
+			
+			
+
+				switch (choice) {
+				case 1: {
+					this->save();
+					goodchoice = true;
+					break;
+				}
+				case 2: {
+					this->Conceded();
+					goodchoice = true;
+					break;
+				}
+				case 3: {
+					system("cls");
+					board.takeTurn(current);
+					goodchoice = true;
+					break;
+
+				}
+				default: {
+					cout << "That was not a valid option" << endl;
+					cin.clear();
+					cin.ignore(10000, '\n');
+					break;
+				}
+
+				}
+			}
+			
+		}
+
+		else {
+
+			if ((!board.CanFlip(first.getSymbol())) && (!board.CanFlip(second.getSymbol()))) {//if neither player can play th game ends
+
+				gameEnd = true;
+				this->GameEnd();
+				break;
+
+			}
+
+			cout << current.getName() << " can't play on this turn, as they can not place a piece anywhere to flip an opponent's piece." << endl;
+
+			bool GoodChoice = false;
+
+			while(!GoodChoice) {
+				cout  << current.getName() << " enter 0 to save, 1 to concede the game, or 2 to forfeit your turn." << endl;
+				
+				int choice;
+			
+				cin >> choice;
+
+				switch (choice) {
+
+				case 0: {
+					this->save();
+					GoodChoice = true;
+					
+					break;
+				}
+				  case 1: {
+					  GoodChoice = true;
+					  this->Conceded();
+					  break;
+				}
+
+				  case 2:{
+					  GoodChoice = true;
+						break;
+				}
+				  default: {
+
+					  cout << "That was not a valid option"<<endl;
+					  cin.clear();
+					  cin.ignore(10000, '\n');
+					  break;
+				  }
+
+				}
+			}
+
+
+		}
+
+		if (current.getName() == first.getName()) {
+			current = second;
+		}
+		else {
+			current = first;
+		}
+	}
 	
 	
 	
@@ -182,16 +296,8 @@ Board Game::load()
 	int rowcounter = 0;// to get the first 3 rows to be players
 
 	while (getline(ReadFile, text)) {//puts every line into positions
-		if (rowcounter ==0) {
-				first = Player(text);
-		}
-		
-		else if (rowcounter == 1) {
-			second = Player(text);
-		}
-		
-		else if (rowcounter == 2) {
-			current = Player(text);
+		if (rowcounter <3) {
+			// skip the first 3 lines as they are used to get the players names
 		}
 		else {
 			positions.append(text);
@@ -199,7 +305,49 @@ Board Game::load()
 		
 		rowcounter++;
 	}
+	ReadFile.close();
 	return Board(positions);
+}
+
+void Game::LoadingPlayers()//when load is chosen this function will set current first and second players.
+{
+	
+	string name;
+	ifstream ReadFile(LoadedFile);
+
+	
+
+
+
+	
+	
+
+	// Process the first line
+	if (getline(ReadFile, name)) {
+		first = Player(name);
+		first.setSymbol('B');
+	}
+
+		// Process the second line
+	if (getline(ReadFile, name)) {
+		second = Player(name);
+		second.setSymbol('W');
+	}
+
+	// Process the third line
+	if (getline(ReadFile, name)) {
+		if (name == first.getName()) {
+			current = first;
+		}
+		else {
+			current = second;
+		}
+	}
+
+	ReadFile.close();
+	
+
+	
 }
 
 void Game::save()
@@ -291,6 +439,60 @@ void Game::save()
 			}
 		}
 	}
+}
+
+void Game::Conceded()
+{
+	system("cls");
+	board.drawBoard();
+	cout <<"\n" << current.getName() << " conceded the game!" << endl;
+	if (current.getName() == first.getName()) {
+		cout << second.getName() << " has won!" << endl;
+	}
+	else {
+		cout << first.getName() << " has won!" << endl;
+	}
+	
+	exit(0);
+}
+
+
+void Game::GameEnd() {
+
+	system("cls");
+	board.drawBoard();
+
+	cout <<"\n" << "The game has ended as no player can longer play." << endl;
+
+	string winner;
+
+	int P1 = 0;
+	int P2 = 0;
+
+	for (int i = 0; i < board.getSize(); i++) {// every piece in board is checked to count how many of each player
+
+		for (int j = 0; j < board.getSize(); j++) {
+			if (board.getBoard()[i][j].getPiece() == first.getSymbol()) {
+				P1++;
+			}
+			if (board.getBoard()[i][j].getPiece() == second.getSymbol()) {
+				P2++;
+			}
+
+		}
+
+	}
+	cout << "Game Over!" << endl;
+	if (P1 == P2) {
+		cout << "It's a Draw!" << endl;
+	}
+	else if (P1>P2) {
+		cout << first.getName() << " has won!" << endl;
+	}
+	else {
+		cout << second.getName() << " has won!" << endl;
+	}
+	exit(0);
 }
 	
 

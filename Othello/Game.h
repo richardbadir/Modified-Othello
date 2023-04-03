@@ -11,12 +11,15 @@ public:
 	void play();
 	static Board load();
 	void setBoard(Board a) { board = a; }
+	void LoadingPlayers();
 
 private:
 	void save();
-	static Player first;
-	static Player second;
-	static Player current;
+	Player first;
+	Player second;
+	Player current;
+	void Conceded();
+	void GameEnd();
 	Board board;
 	static string LoadedFile;
 	

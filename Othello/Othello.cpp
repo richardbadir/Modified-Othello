@@ -7,6 +7,7 @@
 #include<string>
 using namespace std;
 
+
 int main()
 {
 
@@ -34,8 +35,11 @@ int main()
 			break;
 		}
 		case 2: {
-			
+
 			game.setBoard(Game::load());
+			
+			game.LoadingPlayers();
+			
 			break;
 		}
 
